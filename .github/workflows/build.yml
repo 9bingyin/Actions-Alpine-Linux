@@ -100,7 +100,7 @@ jobs:
 
     strategy:
       matrix:
-        CPU: [rk3328, rk3528, rk3399, rk3566, rk3568, rk3576, rk3588]
+        CPU: [rk3399]
     steps:
     - name: Checkout
       uses: actions/checkout@main
@@ -175,7 +175,15 @@ jobs:
           ;;
         esac
 
-        git clone https://github.com/friendlyarm/sd-fuse_${{ matrix.CPU }} -b ${BRANCH} --depth=1 sd-fuse
+        case ${{ matrix.CPU }} in
+        rk3399)
+          REPO_BASE=https://github.com/9bingyin
+          ;;
+        *)
+          REPO_BASE=https://github.com/friendlyarm
+          ;;
+        esac
+        git clone ${REPO_BASE}/sd-fuse_${{ matrix.CPU }} -b ${BRANCH} --depth=1 sd-fuse
         sudo su -c "tar xzfp "../rootfs.tgz" -C sd-fuse --numeric-owner --same-owner"
         if [ "${KERNEL_VARIANT}" = "mainline" ]; then
           sudo sed -i 's/ttyFIQ0/ttyS2/g' sd-fuse/rootfs/etc/inittab
@@ -266,4 +274,3 @@ jobs:
         asset_name: ${{ steps.build_sd_image.outputs.img_filename_sd2emmc }}.gz
         tag: ${{ needs.prepare_release.outputs.release_tag }}
         overwrite: true
-
